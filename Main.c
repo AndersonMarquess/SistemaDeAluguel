@@ -4,6 +4,25 @@
 #include <time.h>
 #include "menu.h"
 
+/*
+	Atualização, Adicionar gravação em Binario para manter os dados salvos.
+*/
+FILE *arquivoVeiculos;
+FILE *arquivoTotal;
+
+//Abre o arquivo que contem as informações dos veiculos salvos
+void abrirBinario() {
+	arquivoVeiculos = fopen("dados.txt", "rb");
+	arquivoTotal = fopen("totalCadastrados.txt", "rb");
+	if(arquivoVeiculos == NULL || arquivoTotal == NULL ) {
+		printf("\nErro na Leitura do arquivo...\n");
+		getchar();
+		exit(1);
+	}
+}
+
+
+
 //Pega a data e hora do sistema
 int dataPedido(int *ano, int * mes, int * dia, int * horas, int * min) {
 	struct tm *local;
@@ -149,8 +168,11 @@ float multaVerificacao(int ident, int valDiaria, int *ano, int *mes, int *dia, i
 
 //Programa com as funcionalidades geral
 int main() {
-	struct veiculos;
-	struct pessoa;
+	//Faz a chamada para o arquivo que lê os dados iniciais do arquivo binario
+	abrirBinario();
+
+//	struct veiculos;
+//	struct pessoa;
 	int c, ident, aux, temp;
 	char opcaoMenu, opcaoAluguel, opcaoParceiro;
 	float valorDiaria, multa;
@@ -185,6 +207,15 @@ int main() {
 				system("clear||cls");
 				printf("\nIdentificacao, Modelo e Placa adicionado com sucesso\n");
 				informacoes(posicao - 1);
+
+				//Gravar arquivo com struct de veiculos adicionados				
+				arquivoVeiculos = fopen("dados.txt", "wb");
+				fwrite(&carros, sizeof(struct veiculos), 99, arquivoVeiculos);
+				fclose(arquivoVeiculos);
+				//Gravar arquivo com TOTAL de veiculos adicionados				
+				arquivoVeiculos = fopen("totalCadastrados.txt", "wb");
+				fwrite(&totalCadastrados, sizeof(int), 1, arquivoTotal);
+				fclose(arquivoTotal);
 				getchar();
 				menu();
 				break;
@@ -447,6 +478,18 @@ int main() {
 
 			//Imprimir na tela os carros disponiveis(1) e Indisponiveis(2)
 			case '5':
+
+				//Lê arquivo com struct de veiculos adicionados				
+				arquivoVeiculos = fopen("dados.txt", "rb");
+				fread(&carros, sizeof(struct veiculos), 99, arquivoVeiculos);
+				fclose(arquivoVeiculos);
+
+				//Lê arquivo com TOTAL de veiculos adicionados				
+				arquivoVeiculos = fopen("totalCadastrados.txt", "rb");
+				fread(&totalCadastrados, sizeof(int), 1, arquivoTotal);
+				fclose(arquivoTotal);
+
+
 				system("clear||cls");
 				dataPedido(&ano[0],&mes[0],&dia[0],&horas[0],&min[0]);
 				listaVeiculos(totalCadastrados,'1', diaEn, mesEn, ano, horasEn);
